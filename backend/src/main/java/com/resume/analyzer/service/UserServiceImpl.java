@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService{
         return mapToResponse(user);
     }
 
-    private User mapToEntity(UserRequest userRequest) {
+    public User mapToEntity(UserRequest userRequest) {
         User user = new User();
         user.setName(userRequest.getName());
         user.setEmail(userRequest.getEmail());

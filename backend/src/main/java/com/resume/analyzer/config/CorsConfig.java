@@ -13,6 +13,8 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .exposedHeaders("Cache-Control", "Content-Type")
+                .allowCredentials(true)
+                .maxAge(0); // Disable preflight caching
     }
 }
