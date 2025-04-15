@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, Email, Lock, Person } from '@mui/icons-material';
 import api from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -50,6 +51,7 @@ const Register = () => {
 
     return (
         <Container component="main" maxWidth="xs">
+            <ThemeToggle />
             <Box
                 sx={{
                     marginTop: 8,

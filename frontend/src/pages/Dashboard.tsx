@@ -223,10 +223,18 @@ const Dashboard = () => {
                                                 borderRadius: 1,
                                                 mb: 1,
                                                 '&.Mui-selected': {
-                                                    backgroundColor: 'primary.light',
+                                                    backgroundColor: 'primary.main',
+                                                    color: 'primary.contrastText',
                                                     '&:hover': {
-                                                        backgroundColor: 'primary.light',
+                                                        backgroundColor: 'primary.dark',
+                                                    },
+                                                    '& .MuiListItemText-secondary': {
+                                                        color: 'primary.contrastText',
+                                                        opacity: 0.8
                                                     }
+                                                },
+                                                '&:hover': {
+                                                    backgroundColor: 'action.hover',
                                                 }
                                             }}
                                         >

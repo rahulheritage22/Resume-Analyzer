@@ -68,23 +68,42 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--scrollbar-track, #f1f1f1);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c0c0c0;
+    background: var(--scrollbar-thumb, #c0c0c0);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a0a0a0;
+    background: var(--scrollbar-thumb-hover, #a0a0a0);
+}
+
+/* Dark mode scrollbar */
+[data-mode="dark"] {
+    --scrollbar-track: #2d3748;
+    --scrollbar-thumb: #4a5568;
+    --scrollbar-thumb-hover: #718096;
+}
+
+/* Light mode scrollbar */
+[data-mode="light"] {
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #c0c0c0;
+    --scrollbar-thumb-hover: #a0a0a0;
 }
 
 /* Improved text selection */
 ::selection {
-    background-color: rgba(37, 99, 235, 0.1);
-    color: #2563eb;
+    background-color: var(--selection-bg, rgba(37, 99, 235, 0.1));
+    color: var(--selection-color, #2563eb);
+}
+
+[data-mode="dark"] ::selection {
+    background-color: rgba(96, 165, 250, 0.2);
+    color: #60a5fa;
 }
 
 /* Smooth transitions */
@@ -97,7 +116,7 @@ textarea {
 
 /* File upload drag and drop area */
 .file-drop-area {
-    border: 2px dashed rgba(0, 0, 0, 0.12);
+    border: 2px dashed var(--border-color, rgba(0, 0, 0, 0.12));
     border-radius: 8px;
     padding: 24px;
     text-align: center;
@@ -105,6 +124,12 @@ textarea {
 }
 
 .file-drop-area:hover {
-    border-color: #2563eb;
-    background-color: rgba(37, 99, 235, 0.02);
+    border-color: var(--border-hover-color, #2563eb);
+    background-color: var(--bg-hover-color, rgba(37, 99, 235, 0.02));
+}
+
+[data-mode="dark"] .file-drop-area {
+    --border-color: rgba(255, 255, 255, 0.12);
+    --border-hover-color: #60a5fa;
+    --bg-hover-color: rgba(96, 165, 250, 0.05);
 }

@@ -15,6 +15,9 @@ import {
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DescriptionIcon from '@mui/icons-material/Description';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { useColorMode } from '../theme/ColorModeContext';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -24,6 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const { toggleColorMode } = useColorMode();
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -69,6 +73,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                 Resume Analyzer
                             </Typography>
                         </Box>
+
+                        <IconButton
+                            sx={{
+                                mr: 2,
+                                color: 'text.primary'
+                            }}
+                            onClick={toggleColorMode}
+                        >
+                            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                        </IconButton>
 
                         <Button
                             onClick={handleLogout}
