@@ -115,6 +115,12 @@ const Dashboard = () => {
         try {
             await api.delete(`/api/v1/resumes/${resumeId}`);
             setResumes(resumes.filter((resume) => resume.id !== resumeId));
+            // Clear job description and analysis if the deleted resume was selected
+            if (selectedResume?.id === resumeId) {
+                setSelectedResume(null);
+                setJobDescription('');
+                setAnalysis(null);
+            }
             setError('');
         } catch (err) {
             setError('Failed to delete resume');
