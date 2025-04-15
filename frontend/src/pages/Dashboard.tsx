@@ -18,7 +18,8 @@ import {
     Fade,
     Chip,
     Stack,
-    Rating
+    Rating,
+    useTheme
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WorkIcon from '@mui/icons-material/Work';
@@ -42,6 +43,7 @@ interface AnalysisResponse {
 }
 
 const Dashboard = () => {
+    const theme = useTheme();
     const [resumes, setResumes] = useState<Resume[]>([]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [jobDescription, setJobDescription] = useState('');
@@ -287,9 +289,18 @@ const Dashboard = () => {
                                     fontFamily: 'inherit',
                                     fontSize: '1rem',
                                     borderRadius: '8px',
-                                    border: '1px solid rgba(0, 0, 0, 0.23)',
+                                    border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)'}`,
                                     marginBottom: '16px',
-                                    resize: 'vertical'
+                                    resize: 'vertical',
+                                    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : '#fff',
+                                    color: theme.palette.text.primary,
+                                    ...{
+                                        '[data-placeholder]': { color: theme.palette.text.secondary },
+                                        '::placeholder': { color: theme.palette.text.secondary, opacity: 1 },
+                                        '::-webkit-input-placeholder': { color: theme.palette.text.secondary, opacity: 1 },
+                                        ':-ms-input-placeholder': { color: theme.palette.text.secondary, opacity: 1 },
+                                        '::-ms-input-placeholder': { color: theme.palette.text.secondary, opacity: 1 }
+                                    } as any
                                 }}
                             />
                             <Button
