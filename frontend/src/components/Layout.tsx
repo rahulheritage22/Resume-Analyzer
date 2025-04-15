@@ -7,8 +7,14 @@ import {
     Button,
     Box,
     Container,
+    useTheme,
+    useMediaQuery,
+    IconButton,
+    Tooltip,
+    Avatar,
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -16,6 +22,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -23,20 +31,103 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Resume Analyzer
-                    </Typography>
-                    <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-                        Logout
-                    </Button>
-                </Toolbar>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <AppBar
+                position="static"
+                elevation={0}
+                sx={{
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    backgroundColor: 'background.paper',
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Toolbar sx={{ px: { xs: 0 } }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                flex: 1
+                            }}
+                        >
+                            <DescriptionIcon
+                                sx={{
+                                    mr: 1.5,
+                                    color: 'primary.main',
+                                    fontSize: 28
+                                }}
+                            />
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{
+                                    color: 'text.primary',
+                                    fontWeight: 600,
+                                    letterSpacing: -0.5
+                                }}
+                            >
+                                Resume Analyzer
+                            </Typography>
+                        </Box>
+
+                        {isMobile ? (
+                            <IconButton
+                                color="primary"
+                                onClick={handleLogout}
+                                size="small"
+                            >
+                                <LogoutIcon />
+                            </IconButton>
+                        ) : (
+                            <Button
+                                onClick={handleLogout}
+                                startIcon={<LogoutIcon />}
+                                sx={{
+                                    borderRadius: 2,
+                                    textTransform: 'none',
+                                    fontWeight: 500
+                                }}
+                            >
+                                Sign Out
+                            </Button>
+                        )}
+                    </Toolbar>
+                </Container>
             </AppBar>
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+
+            <Container
+                component="main"
+                maxWidth="lg"
+                sx={{
+                    mt: { xs: 2, sm: 4 },
+                    mb: 4,
+                    flex: 1
+                }}
+            >
                 {children}
             </Container>
+
+            <Box
+                component="footer"
+                sx={{
+                    py: 3,
+                    px: 2,
+                    mt: 'auto',
+                    backgroundColor: 'background.paper',
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        align="center"
+                    >
+                        © {new Date().getFullYear()} Resume Analyzer. All rights reserved.
+                    </Typography>
+                </Container>
+            </Box>
         </Box>
     );
 };
