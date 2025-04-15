@@ -70,27 +70,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             </Typography>
                         </Box>
 
-                        {isMobile ? (
-                            <IconButton
-                                color="primary"
-                                onClick={handleLogout}
-                                size="small"
-                            >
-                                <LogoutIcon />
-                            </IconButton>
-                        ) : (
-                            <Button
-                                onClick={handleLogout}
-                                startIcon={<LogoutIcon />}
-                                sx={{
-                                    borderRadius: 2,
-                                    textTransform: 'none',
-                                    fontWeight: 500
-                                }}
-                            >
-                                Sign Out
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleLogout}
+                            startIcon={isMobile ? undefined : <LogoutIcon />}
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 500,
+                                minWidth: isMobile ? '40px' : 'auto',
+                                p: isMobile ? 1 : undefined
+                            }}
+                        >
+                            {isMobile ? <LogoutIcon /> : 'Sign Out'}
+                        </Button>
                     </Toolbar>
                 </Container>
             </AppBar>
