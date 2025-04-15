@@ -84,6 +84,7 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public ResumeAnalysisResponse analyzeResumeWithAI(UUID resumeId, JobDescriptionRequest jobDescriptionRequest) {
         String jobDescription = jobDescriptionRequest.getJobDescription().replace("\"", "");
+        checkIfJobDescriptionIsValid(jobDescription);
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new RuntimeException("Resume not found"));
         String analyzedText = chatModel.call(getAiPromptJson(jobDescription, resume.getParsedText()));
@@ -107,6 +108,14 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         return new ByteArrayResource(resume.getFileData());
+    }
+
+    private void checkIfJobDescriptionIsValid(String jobDescription) {
+        String aiPrompt = getCheckIfValidJobDescriptionAiPrompt(jobDescription);
+        String aiResponse = chatModel.call(aiPrompt);
+        if (aiResponse.equalsIgnoreCase("No")) {
+            throw new ResumeAnalyzeException("The provided job description is not valid.");
+        }
     }
 
     private Resume buildResume(MultipartFile file, User user) {
@@ -192,6 +201,16 @@ public class ResumeServiceImpl implements ResumeService {
                 
                 Reply with only 'Yes' or 'No' and don't add any other text and don't add any punctuation.
                 """, resumeText);
+    }
+
+    private String getCheckIfValidJobDescriptionAiPrompt(String jobDescription) {
+        return String.format("""
+                Given the following text, determine whether it is a valid Job Description. If it is a valid Job Description, respond with 'Yes.' If it is not, respond with 'No.'
+                
+                Text: %s"
+                
+                Reply with only 'Yes' or 'No' and don't add any other text and don't add any punctuation.
+                """, jobDescription);
     }
 
     private String getAiPromptJson(String jobDescription, String resumeText) {

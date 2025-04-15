@@ -120,7 +120,6 @@ const Dashboard = () => {
             setSelectedFile(null);
             setError('');
         } catch (err) {
-            console.log(err);
             if (err instanceof AxiosError) {
                 setError(err.response?.data.message);
             } else {
@@ -142,7 +141,11 @@ const Dashboard = () => {
             setAnalysis(response.data);
             setError('');
         } catch (err) {
-            setError('Failed to analyze resume');
+            if (err instanceof AxiosError) {
+                setError(err.response?.data.message);
+            } else {
+                setError('Failed to analyze resume');
+            }
         }
         setLoading(false);
     };
