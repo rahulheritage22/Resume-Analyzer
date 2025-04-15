@@ -29,10 +29,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(userService.login(loginRequest));
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest loginRequest) {
+//        return ResponseEntity.ok(userService.login(loginRequest));
+//    }
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest user) {

@@ -30,8 +30,8 @@ public class ResumeController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<ResumeResponse> uploadResume(@RequestParam("file") MultipartFile file, @RequestParam("userId") UUID userId) {
-        ResumeResponse savedResume = resumeService.uploadAndParseResume(file, userId);
+    public ResponseEntity<ResumeResponse> uploadResume(@RequestParam("file") MultipartFile file) {
+        ResumeResponse savedResume = resumeService.uploadAndParseResume(file);
         return ResponseEntity.ok(savedResume);
     }
 
@@ -41,9 +41,9 @@ public class ResumeController {
         return ResponseEntity.ok(resume);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ResumeResponse>> getResumesByUser(@PathVariable UUID userId) {
-        return ResponseEntity.ok(resumeService.getResumesByUser(userId));
+    @GetMapping("/user/me")
+    public ResponseEntity<List<ResumeResponse>> getResumesByUser() {
+        return ResponseEntity.ok(resumeService.getResumesByUser());
     }
 
     @PostMapping("/analyze/{resumeId}")

@@ -82,6 +82,13 @@ public class UserServiceImpl implements UserService{
         return mapToResponse(user);
     }
 
+    @Override
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return mapToResponse(user);
+    }
+
     public User mapToEntity(UserRequest userRequest) {
         User user = new User();
         user.setName(userRequest.getName());

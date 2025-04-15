@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ResumeService {
-    ResumeResponse uploadAndParseResume(MultipartFile file, UUID userId);
+    ResumeResponse uploadAndParseResume(MultipartFile file);
 
     ResumeResponse getResumeById(UUID id);
 
-    List<ResumeResponse> getResumesByUser(UUID userId);
+    List<ResumeResponse> getResumesByUser();
 
     ResumeAnalysisResponse analyzeResumeWithAI(UUID resumeId, JobDescriptionRequest jobDescriptionRequest);
 

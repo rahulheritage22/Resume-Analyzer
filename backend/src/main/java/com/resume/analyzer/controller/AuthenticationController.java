@@ -43,7 +43,6 @@ public class AuthenticationController {
                 .loadUserByUsername(authenticationRequest.getEmail());
 
         final String jwt = jwtUtil.generateToken(userDetails.getUsername());
-
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 }

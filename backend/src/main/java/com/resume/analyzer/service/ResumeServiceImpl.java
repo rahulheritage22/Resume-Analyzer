@@ -9,6 +9,7 @@ import com.resume.analyzer.model.Resume;
 import com.resume.analyzer.model.User;
 import com.resume.analyzer.repository.ResumeRepository;
 import com.resume.analyzer.repository.UserRepository;
+import com.resume.analyzer.security.SecurityUtil;
 import jakarta.transaction.Transactional;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -35,7 +36,12 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeResponse uploadAndParseResume(MultipartFile file, UUID userId) {
+    public ResumeResponse uploadAndParseResume(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new RuntimeException("Please upload a valid PDF file.");
+        }
+
+        UUID userId = SecurityUtil.getCurrentUserId();
         User user = getUserById(userId);
 
         Resume resume = buildResume(file, user);
@@ -61,7 +67,8 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     @Transactional
-    public List<ResumeResponse> getResumesByUser(UUID userId) {
+    public List<ResumeResponse> getResumesByUser() {
+        UUID userId = SecurityUtil.getCurrentUserId();
         List<Resume> resumes = resumeRepository.findByUserId(userId);
         List<ResumeResponse> resumeResponse = resumes.stream().map(resume -> {;
             User user = resume.getUser();
