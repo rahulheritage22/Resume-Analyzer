@@ -58,6 +58,7 @@ const Dashboard = () => {
     const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
     const [showPdfViewer, setShowPdfViewer] = useState(false);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         fetchResumes();
@@ -75,6 +76,29 @@ const Dashboard = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
             setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            const file = e.dataTransfer.files[0];
+            if (file.type === 'application/pdf') {
+                setSelectedFile(file);
+            } else {
+                setError('Please upload a PDF file');
+            }
         }
     };
 
@@ -122,7 +146,6 @@ const Dashboard = () => {
         try {
             await api.delete(`/api/v1/resumes/${resumeId}`);
             setResumes(resumes.filter((resume) => resume.id !== resumeId));
-            // Clear job description and analysis if the deleted resume was selected
             if (selectedResume?.id === resumeId) {
                 setSelectedResume(null);
                 setJobDescription('');
@@ -199,6 +222,14 @@ const Dashboard = () => {
         );
     };
 
+    const LoadingSkeleton = () => (
+        <Box sx={{ width: '100%', animation: 'pulse 1.5s ease-in-out infinite' }}>
+            <Box sx={{ height: 60, bgcolor: 'action.hover', borderRadius: 1, mb: 2 }} />
+            <Box sx={{ height: 40, bgcolor: 'action.hover', borderRadius: 1, mb: 1, width: '80%' }} />
+            <Box sx={{ height: 40, bgcolor: 'action.hover', borderRadius: 1, width: '60%' }} />
+        </Box>
+    );
+
     return (
         <Box sx={{ py: 3, px: 2 }}>
             <Box display="grid" gap={4}>
@@ -208,13 +239,11 @@ const Dashboard = () => {
                     </Fade>
                 )}
 
-                {/* Resume Upload and List Section */}
                 <Box
                     display="grid"
                     gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
                     gap={3}
                 >
-                    {/* Resume Upload Section */}
                     <Paper
                         sx={{
                             p: 3,
@@ -222,37 +251,47 @@ const Dashboard = () => {
                             flexDirection: 'column',
                             alignItems: 'center',
                             minHeight: '200px',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            transition: 'all 0.3s ease'
                         }}
                     >
-                        <Typography variant="h6" gutterBottom color="primary">
+                        <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
                             Upload Resume
                         </Typography>
-                        <input
-                            accept=".pdf"
-                            style={{ display: 'none' }}
-                            id="raised-button-file"
-                            type="file"
-                            onChange={handleFileChange}
-                        />
-                        <label htmlFor="raised-button-file">
-                            <Button
-                                variant="outlined"
-                                component="span"
-                                startIcon={<CloudUploadIcon />}
-                                sx={{
-                                    mb: 2,
-                                    height: '100px',
-                                    width: '100%',
-                                    border: '2px dashed rgba(0, 0, 0, 0.12)',
-                                    '&:hover': {
-                                        border: '2px dashed #1976d2'
-                                    }
-                                }}
-                            >
-                                Drop PDF here or click to browse
-                            </Button>
-                        </label>
+                        <Box
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            sx={{
+                                width: '100%',
+                                transition: 'all 0.3s ease',
+                                transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+                                border: '2px dashed',
+                                borderColor: isDragging ? 'primary.main' : 'divider',
+                                borderRadius: 2,
+                                p: 3,
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                bgcolor: isDragging ? 'action.hover' : 'transparent'
+                            }}
+                        >
+                            <input
+                                accept=".pdf"
+                                style={{ display: 'none' }}
+                                id="raised-button-file"
+                                type="file"
+                                onChange={handleFileChange}
+                            />
+                            <label htmlFor="raised-button-file" style={{ width: '100%', cursor: 'pointer' }}>
+                                <CloudUploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                                <Typography variant="body1" gutterBottom>
+                                    {isDragging ? 'Drop your PDF here' : 'Drag & drop your PDF here'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    or click to browse
+                                </Typography>
+                            </label>
+                        </Box>
                         {selectedFile && (
                             <Box sx={{ mt: 2, width: '100%', textAlign: 'center' }}>
                                 <Chip
@@ -273,18 +312,20 @@ const Dashboard = () => {
                         )}
                     </Paper>
 
-                    {/* Resume List Section */}
                     <Paper sx={{ p: 3 }}>
-                        <Typography variant="h6" gutterBottom color="primary">
+                        <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
                             Your Resumes
                         </Typography>
-                        {resumes.length === 0 ? (
+                        {loading ? (
+                            <LoadingSkeleton />
+                        ) : resumes.length === 0 ? (
                             <Box sx={{
                                 textAlign: 'center',
                                 py: 4,
                                 color: 'text.secondary'
                             }}>
-                                <Typography variant="body1">
+                                <DescriptionIcon sx={{ fontSize: 48, color: 'action.disabled', mb: 2 }} />
+                                <Typography variant="body1" gutterBottom>
                                     No resumes uploaded yet
                                 </Typography>
                                 <Typography variant="body2">
@@ -293,68 +334,63 @@ const Dashboard = () => {
                             </Box>
                         ) : (
                             <List>
-                                {resumes.map((resume) => (
-                                    <React.Fragment key={resume.id}>
-                                        <ListItemButton
-                                            selected={selectedResume?.id === resume.id}
-                                            onClick={() => setSelectedResume(resume)}
-                                            sx={{
-                                                borderRadius: 1,
-                                                mb: 1,
-                                                '&.Mui-selected': {
-                                                    backgroundColor: 'primary.main',
-                                                    color: 'primary.contrastText',
-                                                    '&:hover': {
-                                                        backgroundColor: 'primary.dark',
-                                                    },
-                                                    '& .MuiListItemText-secondary': {
-                                                        color: 'primary.contrastText',
-                                                        opacity: 0.8
-                                                    }
-                                                },
-                                                '&:hover': {
-                                                    backgroundColor: 'action.hover',
-                                                }
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={resume.fileName}
-                                                secondary={new Date(resume.uploadedAt).toLocaleDateString()}
+                                {resumes.map((resume, index) => (
+                                    <Fade in={true} key={resume.id} style={{ transitionDelay: `${index * 100}ms` }}>
+                                        <Box>
+                                            <ListItemButton
+                                                selected={selectedResume?.id === resume.id}
+                                                onClick={() => setSelectedResume(resume)}
                                                 sx={{
-                                                    '& .MuiListItemText-primary': {
-                                                        fontWeight: selectedResume?.id === resume.id ? 600 : 400
+                                                    borderRadius: 2,
+                                                    mb: 1,
+                                                    transition: 'all 0.2s ease',
+                                                    '&.Mui-selected': {
+                                                        bgcolor: 'primary.main',
+                                                        color: 'primary.contrastText',
+                                                        '&:hover': {
+                                                            bgcolor: 'primary.dark',
+                                                        }
                                                     }
                                                 }}
-                                            />
-                                            <IconButton
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleViewResume(resume.id);
-                                                }}
-                                                sx={{ mr: 1 }}
                                             >
-                                                <VisibilityIcon />
-                                            </IconButton>
-                                            <Button
-                                                color="error"
-                                                startIcon={<DeleteIcon />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteResume(resume.id);
-                                                }}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </ListItemButton>
-                                        <Divider sx={{ my: 1 }} />
-                                    </React.Fragment>
+                                                <ListItemText
+                                                    primary={resume.fileName}
+                                                    secondary={new Date(resume.uploadedAt).toLocaleDateString()}
+                                                    sx={{
+                                                        '& .MuiListItemText-primary': {
+                                                            fontWeight: selectedResume?.id === resume.id ? 600 : 400
+                                                        }
+                                                    }}
+                                                />
+                                                <IconButton
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewResume(resume.id);
+                                                    }}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    <VisibilityIcon />
+                                                </IconButton>
+                                                <Button
+                                                    color="error"
+                                                    startIcon={<DeleteIcon />}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteResume(resume.id);
+                                                    }}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </ListItemButton>
+                                            {index < resumes.length - 1 && <Divider sx={{ my: 1 }} />}
+                                        </Box>
+                                    </Fade>
                                 ))}
                             </List>
                         )}
                     </Paper>
                 </Box>
 
-                {/* Job Description and Analysis Section */}
                 <Paper sx={{ p: 3 }}>
                     <Typography variant="h6" gutterBottom color="primary">
                         Analyze Resume
@@ -415,7 +451,6 @@ const Dashboard = () => {
                     )}
                 </Paper>
 
-                {/* Analysis Results Section */}
                 {analysis && (
                     <Fade in={true}>
                         <Card>
@@ -546,7 +581,6 @@ const Dashboard = () => {
                 )}
             </Box>
 
-            {/* PDF Viewer Dialog */}
             <Dialog
                 open={showPdfViewer}
                 onClose={handleClosePdfViewer}
