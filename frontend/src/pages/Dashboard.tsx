@@ -147,6 +147,7 @@ const Dashboard = () => {
                 setError('Failed to analyze resume');
             }
         }
+        setAnalysis(null);
         setLoading(false);
     };
 
