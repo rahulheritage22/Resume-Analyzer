@@ -5,6 +5,7 @@ import com.resume.analyzer.dto.JobDescriptionRequest;
 import com.resume.analyzer.dto.ResumeAnalysisResponse;
 import com.resume.analyzer.dto.ResumeResponse;
 import com.resume.analyzer.exception.ResumeAnalyzeException;
+import com.resume.analyzer.exception.ResumeUploadException;
 import com.resume.analyzer.model.Resume;
 import com.resume.analyzer.model.User;
 import com.resume.analyzer.repository.ResumeRepository;
@@ -40,7 +41,7 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public ResumeResponse uploadAndParseResume(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new RuntimeException("Please upload a valid PDF file.");
+            throw new ResumeUploadException("Please upload a valid PDF file.");
         }
 
         UUID userId = SecurityUtil.getCurrentUserId();
@@ -110,6 +111,7 @@ public class ResumeServiceImpl implements ResumeService {
 
     private Resume buildResume(MultipartFile file, User user) {
         String parsedText = extractTextFromFile(file);
+        checkIfResume(parsedText);
         Resume resume = new Resume();
         resume.setFileName(file.getOriginalFilename());
         resume.setFileType(file.getContentType());
@@ -118,9 +120,17 @@ public class ResumeServiceImpl implements ResumeService {
         try {
             resume.setFileData(file.getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("Could not store file data", e);
+            throw new ResumeUploadException("Could not store file data");
         }
         return resume;
+    }
+
+    private void checkIfResume(String parsedText) {
+        String aiPrompt = getCheckIfResumeAiPrompt(parsedText);
+        String aiResponse = chatModel.call(aiPrompt);
+        if (aiResponse.equalsIgnoreCase("No")) {
+            throw new ResumeAnalyzeException("The uploaded file is not a valid resume or CV.");
+        }
     }
 
     private ResumeResponse buildResumeResponse(Resume resume, User user) {
@@ -136,12 +146,12 @@ public class ResumeServiceImpl implements ResumeService {
 
     private String extractTextFromFile(MultipartFile file) {
         if (file.isEmpty() || !file.getOriginalFilename().endsWith(".pdf")) {
-            throw new RuntimeException("Please upload a valid PDF file.");
+            throw new ResumeUploadException("Please upload a valid PDF file.");
         }
 
         try (InputStream inputStream = file.getInputStream(); PDDocument document = PDDocument.load(inputStream)) {
             if (document.isEncrypted()) {
-                throw new RuntimeException("The PDF file is encrypted and cannot be read.");
+                throw new ResumeUploadException("The PDF file is encrypted and cannot be read.");
             }
 
             PDFTextStripper pdfStripper = new PDFTextStripper();
@@ -172,6 +182,16 @@ public class ResumeServiceImpl implements ResumeService {
         } catch (Exception e) {
             throw new ResumeAnalyzeException("Failed to parse AI response", e);
         }
+    }
+
+    private String getCheckIfResumeAiPrompt(String resumeText) {
+        return String.format("""
+                Given the following text, determine whether it is a resume or CV. If it is a resume or CV, respond with 'Yes.' If it is not, respond with 'No.'
+                
+                Text: %s"
+                
+                Reply with only 'Yes' or 'No' and don't add any other text and don't add any punctuation.
+                """, resumeText);
     }
 
     private String getAiPromptJson(String jobDescription, String resumeText) {

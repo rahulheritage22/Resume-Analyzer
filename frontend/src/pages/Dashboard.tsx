@@ -31,6 +31,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloseIcon from '@mui/icons-material/Close';
 import api from '../services/api';
 import PDFViewer from '../components/PdfViewer';
+import { AxiosError } from 'axios';
 
 interface Resume {
     id: string;
@@ -119,7 +120,12 @@ const Dashboard = () => {
             setSelectedFile(null);
             setError('');
         } catch (err) {
-            setError('Failed to upload resume');
+            console.log(err);
+            if (err instanceof AxiosError) {
+                setError(err.response?.data.message);
+            } else {
+                setError('Failed to upload resume');
+            }
         }
         setLoading(false);
     };
