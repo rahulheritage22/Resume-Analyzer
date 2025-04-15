@@ -4,6 +4,7 @@ import com.resume.analyzer.dto.JobDescriptionRequest;
 import com.resume.analyzer.dto.ResumeAnalysisResponse;
 import com.resume.analyzer.dto.ResumeResponse;
 import com.resume.analyzer.model.Resume;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -19,4 +20,6 @@ public interface ResumeService {
     ResumeAnalysisResponse analyzeResumeWithAI(UUID resumeId, JobDescriptionRequest jobDescriptionRequest);
 
     void deleteResume(UUID id);
+    
+    Resource getPdfFile(UUID id);
 }

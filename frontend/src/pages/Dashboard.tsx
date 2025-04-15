@@ -19,13 +19,18 @@ import {
     Chip,
     Stack,
     Rating,
-    useTheme
+    useTheme,
+    Dialog,
+    IconButton
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WorkIcon from '@mui/icons-material/Work';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionIcon from '@mui/icons-material/Description';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CloseIcon from '@mui/icons-material/Close';
 import api from '../services/api';
+import PDFViewer from '../components/PdfViewer';
 
 interface Resume {
     id: string;
@@ -51,6 +56,8 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
+    const [showPdfViewer, setShowPdfViewer] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         fetchResumes();
@@ -126,6 +133,28 @@ const Dashboard = () => {
             setError('Failed to delete resume');
         }
         setLoading(false);
+    };
+
+    const handleViewResume = async (resumeId: string) => {
+        try {
+            const response = await api.get(`/api/v1/resumes/${resumeId}/pdf`, {
+                responseType: 'blob'
+            });
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            setPdfUrl(url);
+            setShowPdfViewer(true);
+        } catch (err) {
+            setError('Failed to load PDF');
+        }
+    };
+
+    const handleClosePdfViewer = () => {
+        setShowPdfViewer(false);
+        if (pdfUrl) {
+            URL.revokeObjectURL(pdfUrl);
+            setPdfUrl(null);
+        }
     };
 
     const renderScoreGauge = (score: number) => {
@@ -297,6 +326,15 @@ const Dashboard = () => {
                                                     }
                                                 }}
                                             />
+                                            <IconButton
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleViewResume(resume.id);
+                                                }}
+                                                sx={{ mr: 1 }}
+                                            >
+                                                <VisibilityIcon />
+                                            </IconButton>
                                             <Button
                                                 color="error"
                                                 startIcon={<DeleteIcon />}
@@ -304,7 +342,6 @@ const Dashboard = () => {
                                                     e.stopPropagation();
                                                     handleDeleteResume(resume.id);
                                                 }}
-                                                sx={{ ml: 2 }}
                                             >
                                                 Delete
                                             </Button>
@@ -444,20 +481,20 @@ const Dashboard = () => {
                                         <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 2 }}>
                                             Improvement Suggestions
                                         </Typography>
-                                        <Paper 
-                                            elevation={0} 
-                                            sx={{ 
+                                        <Paper
+                                            elevation={0}
+                                            sx={{
                                                 bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
                                                 borderRadius: 2
                                             }}
                                         >
                                             <List>
                                                 {analysis.SuggestionsForImprovement.map((suggestion, index) => (
-                                                    <ListItem 
+                                                    <ListItem
                                                         key={index}
                                                         sx={{
-                                                            borderBottom: index < analysis.SuggestionsForImprovement.length - 1 
-                                                                ? `1px solid ${theme.palette.divider}` 
+                                                            borderBottom: index < analysis.SuggestionsForImprovement.length - 1
+                                                                ? `1px solid ${theme.palette.divider}`
                                                                 : 'none'
                                                         }}
                                                     >
@@ -493,7 +530,7 @@ const Dashboard = () => {
                                             <Typography
                                                 variant="body1"
                                                 color="text.secondary"
-                                                sx={{ 
+                                                sx={{
                                                     lineHeight: 1.7,
                                                     fontSize: '0.95rem'
                                                 }}
@@ -508,6 +545,34 @@ const Dashboard = () => {
                     </Fade>
                 )}
             </Box>
+
+            {/* PDF Viewer Dialog */}
+            <Dialog
+                open={showPdfViewer}
+                onClose={handleClosePdfViewer}
+                maxWidth="lg"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        height: '90vh',
+                        maxHeight: '90vh'
+                    }
+                }}
+            >
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    p: 1,
+                    position: 'absolute',
+                    right: 0,
+                    zIndex: 1
+                }}>
+                    <IconButton onClick={handleClosePdfViewer}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                {pdfUrl && <PDFViewer fileUrl={pdfUrl} />}
+            </Dialog>
         </Box>
     );
 };

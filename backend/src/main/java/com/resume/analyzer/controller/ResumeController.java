@@ -5,7 +5,10 @@ import com.resume.analyzer.dto.ResumeAnalysisResponse;
 import com.resume.analyzer.dto.ResumeResponse;
 import com.resume.analyzer.model.Resume;
 import com.resume.analyzer.service.ResumeService;
-    import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,5 +59,14 @@ public class ResumeController {
     public ResponseEntity<Void> deleteResume(@PathVariable UUID id) {
         resumeService.deleteResume(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<Resource> downloadPdf(@PathVariable UUID id) {
+        Resource pdfResource = resumeService.getPdfFile(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"resume.pdf\"")
+                .body(pdfResource);
     }
 }

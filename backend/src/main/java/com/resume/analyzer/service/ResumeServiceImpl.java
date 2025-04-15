@@ -14,6 +14,8 @@ import jakarta.transaction.Transactional;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -94,6 +96,18 @@ public class ResumeServiceImpl implements ResumeService {
         resumeRepository.deleteById(id);
     }
 
+    @Override
+    public Resource getPdfFile(UUID id) {
+        Resume resume = resumeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+        if (!resume.getFileType().equals("application/pdf")) {
+            throw new RuntimeException("File is not a PDF");
+        }
+
+        return new ByteArrayResource(resume.getFileData());
+    }
+
     private Resume buildResume(MultipartFile file, User user) {
         String parsedText = extractTextFromFile(file);
         Resume resume = new Resume();
@@ -101,6 +115,11 @@ public class ResumeServiceImpl implements ResumeService {
         resume.setFileType(file.getContentType());
         resume.setParsedText(parsedText);
         resume.setUser(user);
+        try {
+            resume.setFileData(file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Could not store file data", e);
+        }
         return resume;
     }
 

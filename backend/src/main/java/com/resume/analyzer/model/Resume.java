@@ -40,6 +40,10 @@ public class Resume {
     @Lob
     private String aiSummary; // AI-generated analysis
 
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] fileData; // Actual PDF file data
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull(message = "User cannot be null")
