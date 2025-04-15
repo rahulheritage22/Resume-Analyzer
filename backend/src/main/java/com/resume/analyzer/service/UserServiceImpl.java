@@ -8,6 +8,7 @@ import com.resume.analyzer.exception.UserCreationException;
 import com.resume.analyzer.exception.UserNotFoundException;
 import com.resume.analyzer.model.User;
 import com.resume.analyzer.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -15,12 +16,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -29,6 +32,7 @@ public class UserServiceImpl implements UserService{
             throw new UserCreationException("User with email " + user.getEmail() + " already exists");
         }
         User newUser = mapToEntity(user);
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         User savedUser = userRepository.save(newUser);
         return mapToResponse(savedUser);
     }
@@ -75,7 +79,7 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new UserNotFoundException("Invalid email or password"));
 
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new UserNotFoundException("Invalid email or password");
         }
 
@@ -89,7 +93,7 @@ public class UserServiceImpl implements UserService{
         return mapToResponse(user);
     }
 
-    public User mapToEntity(UserRequest userRequest) {
+    private User mapToEntity(UserRequest userRequest) {
         User user = new User();
         user.setName(userRequest.getName());
         user.setEmail(userRequest.getEmail());
