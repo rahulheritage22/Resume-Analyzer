@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import WorkIcon from '@mui/icons-material/Work';
+import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../services/api';
 
 interface Resume {
@@ -102,6 +103,18 @@ const Dashboard = () => {
         setLoading(false);
     };
 
+    const handleDeleteResume = async (resumeId: string) => {
+        setLoading(true);
+        try {
+            await api.delete(`/api/v1/resumes/${resumeId}`);
+            setResumes(resumes.filter((resume) => resume.id !== resumeId));
+            setError('');
+        } catch (err) {
+            setError('Failed to delete resume');
+        }
+        setLoading(false);
+    };
+
     return (
         <Box component="main">
             <Box display="grid" gap={3}>
@@ -166,6 +179,16 @@ const Dashboard = () => {
                                             primary={resume.fileName}
                                             secondary={new Date(resume.uploadedAt).toLocaleString()}
                                         />
+                                        <Button
+                                            color="error"
+                                            startIcon={<DeleteIcon />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteResume(resume.id);
+                                            }}
+                                        >
+                                            Delete
+                                        </Button>
                                     </ListItemButton>
                                     <Divider />
                                 </React.Fragment>
