@@ -48,6 +48,13 @@ interface AnalysisResponse {
     OverallAssessment: string;
 }
 
+interface SavedAnalysis {
+    id: string;
+    aiSummary: AnalysisResponse;
+    jobDescription: string;
+    resumeId: string;
+}
+
 const Dashboard = () => {
     const theme = useTheme();
     const [resumes, setResumes] = useState<Resume[]>([]);
@@ -60,6 +67,7 @@ const Dashboard = () => {
     const [showPdfViewer, setShowPdfViewer] = useState(false);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
 
     useEffect(() => {
         fetchResumes();
@@ -71,6 +79,19 @@ const Dashboard = () => {
             setResumes(response.data);
         } catch (err) {
             setError('Failed to fetch resumes');
+        }
+    };
+
+    const fetchAnalyses = async (resumeId: string) => {
+        try {
+            const response = await api.get(`/api/v1/analysis/resume/${resumeId}`);
+            setSavedAnalyses(response.data);
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data.message);
+            } else {
+                setError('Failed to fetch analyses');
+            }
         }
     };
 
@@ -138,7 +159,16 @@ const Dashboard = () => {
                 `/api/v1/resumes/analyze/${selectedResume.id}`,
                 { jobDescription }
             );
-            setAnalysis(response.data);
+            const analysisResult = response.data;
+            setAnalysis(analysisResult);
+
+            // Save the analysis report
+            await api.post('/api/v1/analysis', {
+                resumeId: selectedResume.id,
+                jobDescription,
+                aiSummary: analysisResult
+            });
+
             setError('');
         } catch (err) {
             if (err instanceof AxiosError) {
@@ -147,7 +177,6 @@ const Dashboard = () => {
                 setError('Failed to analyze resume');
             }
         }
-        setAnalysis(null);
         setLoading(false);
     };
 
@@ -188,6 +217,18 @@ const Dashboard = () => {
             URL.revokeObjectURL(pdfUrl);
             setPdfUrl(null);
         }
+    };
+
+    const handleSelectResume = (resume: Resume) => {
+        setSelectedResume(resume);
+        fetchAnalyses(resume.id);
+        setAnalysis(null);
+        setJobDescription('');
+    };
+
+    const handleViewSavedAnalysis = (analysis: SavedAnalysis) => {
+        setJobDescription(analysis.jobDescription);
+        setAnalysis(analysis.aiSummary);
     };
 
     const renderScoreGauge = (score: number) => {
@@ -349,7 +390,7 @@ const Dashboard = () => {
                                         <Box>
                                             <ListItemButton
                                                 selected={selectedResume?.id === resume.id}
-                                                onClick={() => setSelectedResume(resume)}
+                                                onClick={() => handleSelectResume(resume)}
                                                 sx={{
                                                     borderRadius: 2,
                                                     mb: 1,
@@ -400,6 +441,55 @@ const Dashboard = () => {
                         )}
                     </Paper>
                 </Box>
+
+                {selectedResume && savedAnalyses.length > 0 && (
+                    <Paper sx={{ p: 3, mb: 3 }}>
+                        <Typography variant="h6" gutterBottom color="primary" sx={{ fontWeight: 600 }}>
+                            Previous Analyses
+                        </Typography>
+                        <List>
+                            {savedAnalyses.map((savedAnalysis, index) => (
+                                <Box key={savedAnalysis.id}>
+                                    <ListItemButton
+                                        onClick={() => handleViewSavedAnalysis(savedAnalysis)}
+                                        sx={{
+                                            borderRadius: 2,
+                                            mb: 1,
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary={`Match Score: ${savedAnalysis.aiSummary.MatchScore}%`}
+                                            secondary={
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                    sx={{
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                        mt: 0.5
+                                                    }}
+                                                >
+                                                    {savedAnalysis.jobDescription}
+                                                </Typography>
+                                            }
+                                        />
+                                        <Chip
+                                            label={savedAnalysis.aiSummary.MatchScore >= 80 ? 'Strong Match' :
+                                                savedAnalysis.aiSummary.MatchScore >= 60 ? 'Good Match' : 'Low Match'}
+                                            color={savedAnalysis.aiSummary.MatchScore >= 80 ? 'success' :
+                                                savedAnalysis.aiSummary.MatchScore >= 60 ? 'warning' : 'error'}
+                                            size="small"
+                                            sx={{ ml: 2 }}
+                                        />
+                                    </ListItemButton>
+                                    {index < savedAnalyses.length - 1 && <Divider sx={{ my: 1 }} />}
+                                </Box>
+                            ))}
+                        </List>
+                    </Paper>
+                )}
 
                 <Paper sx={{ p: 3 }}>
                     <Typography variant="h6" gutterBottom color="primary">
