@@ -88,7 +88,6 @@ public class ResumeServiceImpl implements ResumeService {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new RuntimeException("Resume not found"));
         String analyzedText = chatModel.call(getAiPromptJson(jobDescription, resume.getParsedText()));
-        resume.setAiSummary(analyzedText);
         resumeRepository.save(resume);
         return parseAiResponse(analyzedText);
     }
@@ -185,9 +184,7 @@ public class ResumeServiceImpl implements ResumeService {
                         .replaceAll("\\s*```$", "");             // remove ending ```
             }
 
-            ResumeAnalysisResponse response = objectMapper.readValue(aiResponse, ResumeAnalysisResponse.class);
-
-            return response;
+            return objectMapper.readValue(aiResponse, ResumeAnalysisResponse.class);
         } catch (Exception e) {
             throw new ResumeAnalyzeException("Failed to parse AI response", e);
         }
