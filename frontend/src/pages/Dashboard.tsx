@@ -68,6 +68,8 @@ const Dashboard = () => {
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
+    const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
+    const [analysisModified, setAnalysisModified] = useState(false);
 
     useEffect(() => {
         fetchResumes();
@@ -161,20 +163,46 @@ const Dashboard = () => {
             );
             const analysisResult = response.data;
             setAnalysis(analysisResult);
-
-            // Save the analysis report
-            await api.post('/api/v1/analysis', {
-                resumeId: selectedResume.id,
-                jobDescription,
-                aiSummary: analysisResult
-            });
-
+            setAnalysisModified(true);
             setError('');
         } catch (err) {
             if (err instanceof AxiosError) {
                 setError(err.response?.data.message);
             } else {
                 setError('Failed to analyze resume');
+            }
+        }
+        setLoading(false);
+    };
+
+    const handleSaveAnalysis = async () => {
+        if (!selectedResume || !analysis || !jobDescription) return;
+
+        setLoading(true);
+        try {
+            if (selectedAnalysis) {
+                // Update existing analysis
+                await api.put(`/api/v1/analysis/${selectedAnalysis.id}`, {
+                    jobDescription,
+                    aiSummary: analysis
+                });
+            } else {
+                // Create new analysis
+                const response = await api.post('/api/v1/analysis', {
+                    resumeId: selectedResume.id,
+                    jobDescription,
+                    aiSummary: analysis
+                });
+                setSelectedAnalysis(response.data);
+            }
+            setAnalysisModified(false);
+            await fetchAnalyses(selectedResume.id);
+            setError('');
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data.message);
+            } else {
+                setError('Failed to save analysis');
             }
         }
         setLoading(false);
@@ -224,11 +252,37 @@ const Dashboard = () => {
         fetchAnalyses(resume.id);
         setAnalysis(null);
         setJobDescription('');
+        setSelectedAnalysis(null);
+        setAnalysisModified(false);
     };
 
     const handleViewSavedAnalysis = (analysis: SavedAnalysis) => {
+        setSelectedAnalysis(analysis);
         setJobDescription(analysis.jobDescription);
         setAnalysis(analysis.aiSummary);
+        setAnalysisModified(false);
+    };
+
+    const handleDeleteAnalysis = async (analysisId: string, event: React.MouseEvent) => {
+        event.stopPropagation();
+        setLoading(true);
+        try {
+            await api.delete(`/api/v1/analysis/${analysisId}`);
+            setSavedAnalyses(savedAnalyses.filter((analysis) => analysis.id !== analysisId));
+            if (selectedAnalysis?.id === analysisId) {
+                setSelectedAnalysis(null);
+                setAnalysis(null);
+                setJobDescription('');
+            }
+            setError('');
+        } catch (err) {
+            if (err instanceof AxiosError) {
+                setError(err.response?.data.message);
+            } else {
+                setError('Failed to delete analysis');
+            }
+        }
+        setLoading(false);
     };
 
     const renderScoreGauge = (score: number) => {
@@ -483,6 +537,13 @@ const Dashboard = () => {
                                             size="small"
                                             sx={{ ml: 2 }}
                                         />
+                                        <IconButton
+                                            onClick={(e) => handleDeleteAnalysis(savedAnalysis.id, e)}
+                                            sx={{ ml: 1 }}
+                                            color="error"
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
                                     </ListItemButton>
                                     {index < savedAnalyses.length - 1 && <Divider sx={{ my: 1 }} />}
                                 </Box>
@@ -534,6 +595,16 @@ const Dashboard = () => {
                             >
                                 {loading ? <CircularProgress size={24} /> : 'Analyze Match'}
                             </Button>
+                            {analysisModified && (
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleSaveAnalysis}
+                                    disabled={loading}
+                                    fullWidth
+                                >
+                                    {loading ? <CircularProgress size={24} /> : 'Save Analysis'}
+                                </Button>
+                            )}
                         </>
                     ) : (
                         <Box sx={{
