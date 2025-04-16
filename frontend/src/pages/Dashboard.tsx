@@ -142,12 +142,18 @@ const Dashboard = () => {
         }
     };
 
-    const handleSelectResume = (resume: Resume | null) => {
+    const handleSelectResume = async (resume: Resume | null) => {
         setSelectedResume(resume);
         if (!resume) {
             setJobDescription('');
             setAnalysis(null);
             setSavedAnalyses([]);
+        } else {
+            try {
+                await fetchAnalyses(resume.id);
+            } catch (err) {
+                setError('Failed to fetch analyses');
+            }
         }
     };
 
@@ -211,6 +217,7 @@ const Dashboard = () => {
                 {selectedResume && (
                     <SavedAnalysesList
                         analyses={savedAnalyses}
+                        selectedAnalysis={selectedAnalysis}
                         onViewAnalysis={handleViewSavedAnalysis}
                         onDeleteAnalysis={handleDeleteAnalysis}
                     />

@@ -15,12 +15,14 @@ import { SavedAnalysis } from '../types/analysis';
 
 interface SavedAnalysesListProps {
     analyses: SavedAnalysis[];
+    selectedAnalysis: SavedAnalysis | null;
     onViewAnalysis: (analysis: SavedAnalysis) => void;
     onDeleteAnalysis: (id: string, event: React.MouseEvent) => void;
 }
 
 const SavedAnalysesList: React.FC<SavedAnalysesListProps> = ({
     analyses,
+    selectedAnalysis,
     onViewAnalysis,
     onDeleteAnalysis,
 }) => {
@@ -36,9 +38,24 @@ const SavedAnalysesList: React.FC<SavedAnalysesListProps> = ({
                     <Box key={savedAnalysis.id}>
                         <ListItemButton
                             onClick={() => onViewAnalysis(savedAnalysis)}
+                            selected={selectedAnalysis?.id === savedAnalysis.id}
                             sx={{
                                 borderRadius: 2,
                                 mb: 1,
+                                transition: 'all 0.2s ease',
+                                '&.Mui-selected': {
+                                    bgcolor: 'primary.main',
+                                    color: 'primary.contrastText',
+                                    '&:hover': {
+                                        bgcolor: 'primary.dark',
+                                    },
+                                    '& .MuiTypography-root': {
+                                        color: 'inherit'
+                                    },
+                                    '& .MuiTypography-colorTextSecondary': {
+                                        color: 'primary.contrastText'
+                                    }
+                                }
                             }}
                         >
                             <ListItemText
