@@ -152,6 +152,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                             '&:hover': {
                                                 bgcolor: 'action.selected',
                                             },
+                                            p: 1.5,
+                                            borderRadius: 2,
+                                            '& svg': {
+                                                fontSize: '1.25rem',
+                                            }
                                         }}
                                     >
                                         {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
