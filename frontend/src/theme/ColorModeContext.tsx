@@ -1,13 +1,21 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
+interface CustomColors {
+    primary?: string;
+}
+
 interface ColorModeContextType {
     toggleColorMode: () => void;
     mode: 'light' | 'dark';
+    customColors: CustomColors;
+    updateCustomColors: (colors: CustomColors) => void;
 }
 
 export const ColorModeContext = createContext<ColorModeContextType>({
     toggleColorMode: () => { },
-    mode: 'light'
+    mode: 'light',
+    customColors: {},
+    updateCustomColors: () => { }
 });
 
 export const useColorMode = () => {
@@ -24,9 +32,18 @@ export const ColorModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return (savedMode === 'dark' || savedMode === 'light') ? savedMode : 'light';
     });
 
+    const [customColors, setCustomColors] = useState<CustomColors>(() => {
+        const savedColors = localStorage.getItem('customColors');
+        return savedColors ? JSON.parse(savedColors) : {};
+    });
+
     useEffect(() => {
         localStorage.setItem('colorMode', mode);
     }, [mode]);
+
+    useEffect(() => {
+        localStorage.setItem('customColors', JSON.stringify(customColors));
+    }, [customColors]);
 
     const colorMode = useMemo(
         () => ({
@@ -34,8 +51,12 @@ export const ColorModeProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
             },
             mode,
+            customColors,
+            updateCustomColors: (colors: CustomColors) => {
+                setCustomColors(colors);
+            }
         }),
-        [mode],
+        [mode, customColors],
     );
 
     return (

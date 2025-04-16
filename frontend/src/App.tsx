@@ -11,8 +11,8 @@ import { ColorModeProvider, useColorMode } from './theme/ColorModeContext';
 import { createAppTheme } from './theme/theme';
 
 function AppContent() {
-  const { mode } = useColorMode();
-  const theme = React.useMemo(() => createAppTheme(mode), [mode]);
+  const { mode, customColors } = useColorMode();
+  const theme = React.useMemo(() => createAppTheme(mode, customColors), [mode, customColors]);
 
   return (
     <ThemeProvider theme={theme}>

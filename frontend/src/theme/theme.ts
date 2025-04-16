@@ -1,21 +1,19 @@
 import { PaletteMode, ThemeOptions } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
 
-const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
+interface CustomColors {
+    primary?: string;
+}
+
+const getDesignTokens = (mode: PaletteMode, customColors: CustomColors = {}): ThemeOptions => ({
     palette: {
         mode,
         ...(mode === 'light'
             ? {
                 primary: {
-                    main: '#2563eb',
-                    light: '#60a5fa',
-                    dark: '#1d4ed8',
-                    contrastText: '#ffffff',
-                },
-                secondary: {
-                    main: '#4f46e5',
-                    light: '#818cf8',
-                    dark: '#4338ca',
+                    main: customColors.primary || '#2563eb',
+                    light: customColors.primary ? adjustColor(customColors.primary, 20) : '#60a5fa',
+                    dark: customColors.primary ? adjustColor(customColors.primary, -20) : '#1d4ed8',
                     contrastText: '#ffffff',
                 },
                 error: {
@@ -40,15 +38,9 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
             }
             : {
                 primary: {
-                    main: '#60a5fa',
-                    light: '#93c5fd',
-                    dark: '#3b82f6',
-                    contrastText: '#000000',
-                },
-                secondary: {
-                    main: '#818cf8',
-                    light: '#a5b4fc',
-                    dark: '#6366f1',
+                    main: customColors.primary ? adjustColor(customColors.primary, 20) : '#60a5fa',
+                    light: customColors.primary ? adjustColor(customColors.primary, 40) : '#93c5fd',
+                    dark: customColors.primary || '#3b82f6',
                     contrastText: '#000000',
                 },
                 error: {
@@ -218,6 +210,15 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
     },
 });
 
-export const createAppTheme = (mode: PaletteMode) => {
-    return createTheme(getDesignTokens(mode));
+// Helper function to adjust colors
+function adjustColor(color: string, amount: number): string {
+    const hex = color.replace('#', '');
+    const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount));
+    const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount));
+    const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount));
+    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+export const createAppTheme = (mode: PaletteMode, customColors?: CustomColors) => {
+    return createTheme(getDesignTokens(mode, customColors));
 };

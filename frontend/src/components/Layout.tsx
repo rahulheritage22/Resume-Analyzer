@@ -24,7 +24,9 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PaletteIcon from '@mui/icons-material/Palette';
 import { useColorMode } from '../theme/ColorModeContext';
+import ThemeSettings from './ThemeSettings';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -37,6 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const { toggleColorMode, mode } = useColorMode();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+    const [themeSettingsOpen, setThemeSettingsOpen] = useState(false);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -135,6 +138,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                             </>
                                         )}
                                     </MenuItem>
+                                    <MenuItem onClick={() => setThemeSettingsOpen(true)}>
+                                        <PaletteIcon sx={{ mr: 2 }} />
+                                        Customize Theme
+                                    </MenuItem>
                                     <Divider />
                                     <MenuItem onClick={handleLogout}>
                                         <LogoutIcon sx={{ mr: 2 }} />
@@ -160,6 +167,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                         }}
                                     >
                                         {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                                    </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title="Customize Theme">
+                                    <IconButton
+                                        onClick={() => setThemeSettingsOpen(true)}
+                                        sx={{
+                                            bgcolor: 'action.hover',
+                                            '&:hover': {
+                                                bgcolor: 'action.selected',
+                                            },
+                                            p: 1.5,
+                                            borderRadius: 2,
+                                            '& svg': {
+                                                fontSize: '1.25rem',
+                                            }
+                                        }}
+                                    >
+                                        <PaletteIcon />
                                     </IconButton>
                                 </Tooltip>
 
@@ -221,6 +247,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </Typography>
                 </Container>
             </Box>
+
+            <ThemeSettings
+                open={themeSettingsOpen}
+                onClose={() => setThemeSettingsOpen(false)}
+            />
         </Box>
     );
 };
