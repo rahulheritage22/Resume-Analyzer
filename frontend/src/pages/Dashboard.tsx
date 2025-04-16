@@ -142,13 +142,13 @@ const Dashboard = () => {
         }
     };
 
-    const handleSelectResume = (resume: Resume) => {
+    const handleSelectResume = (resume: Resume | null) => {
         setSelectedResume(resume);
-        fetchAnalyses(resume.id);
-        setAnalysis(null);
-        setJobDescription('');
-        setSelectedAnalysis(null);
-        setAnalysisModified(false);
+        if (!resume) {
+            setJobDescription('');
+            setAnalysis(null);
+            setSavedAnalyses([]);
+        }
     };
 
     const handleViewSavedAnalysis = (analysis: SavedAnalysis) => {

@@ -19,7 +19,7 @@ import { Resume } from '../types/resume';
 interface ResumeListProps {
     resumes: Resume[];
     selectedResume: Resume | null;
-    onSelectResume: (resume: Resume) => void;
+    onSelectResume: (resume: Resume | null) => void;
     onDeleteResume: (id: string) => void;
     onViewResume: (id: string) => void;
     loading?: boolean;
@@ -69,7 +69,7 @@ const ResumeList: React.FC<ResumeListProps> = ({
                             <Box>
                                 <ListItemButton
                                     selected={selectedResume?.id === resume.id}
-                                    onClick={() => onSelectResume(resume)}
+                                    onClick={() => onSelectResume(selectedResume?.id === resume.id ? null : resume)}
                                     sx={{
                                         borderRadius: 2,
                                         mb: 1,
