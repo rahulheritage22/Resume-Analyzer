@@ -6,3 +6,5 @@
 *.class
 *.jar
 *.env
+# Local Netlify folder
+.netlify

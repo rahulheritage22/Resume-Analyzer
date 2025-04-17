@@ -7,7 +7,7 @@ const config: { [key: string]: Config } = {
         apiUrl: 'http://localhost:8080',
     },
     production: {
-        apiUrl: process.env.REACT_APP_API_URL || 'https://your-backend-url.railway.app',
+        apiUrl: process.env.REACT_APP_API_URL || 'https://resume-analyzer-production.up.railway.app',
     },
 };
 
