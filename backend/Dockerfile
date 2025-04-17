@@ -1,21 +1,17 @@
-FROM eclipse-temurin:21-jdk-focal
-
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-21-jammy AS build
 WORKDIR /app
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+RUN mvn dependency:go-offline
 
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline
+COPY src src
+RUN mvn package -DskipTests
 
-COPY src ./src
-
-RUN ./mvnw package -DskipTests
-
-FROM eclipse-temurin:21-jre-focal
-
+# Runtime stage
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-
-COPY --from=0 /app/target/*.jar app.jar
-
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
