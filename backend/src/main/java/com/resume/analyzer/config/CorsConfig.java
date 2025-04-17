@@ -17,11 +17,11 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns(corsProperties.getAllowedOriginPattern())
+                .allowedOriginPatterns(corsProperties.getAllowedOriginPattern().split(","))
                 .allowedMethods(corsProperties.getAllowedMethods().toArray(String[]::new))
                 .allowedHeaders(corsProperties.getAllowedHeaders().toArray(String[]::new))
                 .exposedHeaders(corsProperties.getExposedHeaders().toArray(String[]::new))
                 .allowCredentials(true)
-                .maxAge(3600);
+                .maxAge(3600L);
     }
 }
