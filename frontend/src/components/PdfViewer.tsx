@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Viewer, Worker, SpecialZoomLevel, RenderError } from '@react-pdf-viewer/core';
+import { Viewer, Worker, SpecialZoomLevel } from '@react-pdf-viewer/core';
 import type { LoadError } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { Box, useTheme, CircularProgress, Typography, Alert } from '@mui/material';
+import { Box, useTheme, CircularProgress, Typography, Alert, Fade } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
@@ -13,32 +13,34 @@ const PDFViewer = ({ fileUrl }: { fileUrl: string }) => {
         sidebarTabs: (defaultTabs) => defaultTabs.slice(0, 2),
     });
     const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState('');
+    const [errorMessage, setErrorMessage] = React.useState('');
 
     const renderError = React.useCallback((error: LoadError) => {
-        setError('Failed to load PDF. Please try again.');
+        const message = error.message || 'Failed to load PDF. Please try again.';
+        setErrorMessage(message);
         setLoading(false);
         return (
-            <Box
-                sx={{
+            <Fade in={true}>
+                <Box sx={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     height: '100%',
                     p: 3,
-                }}
-            >
-                <Alert
-                    severity="error"
-                    icon={<ErrorOutlineIcon fontSize="large" />}
-                    sx={{
-                        maxWidth: 400,
-                        width: '100%',
-                    }}
-                >
-                    Failed to load PDF. Please try again.
-                </Alert>
-            </Box>
+                }}>
+                    <Alert
+                        severity="error"
+                        icon={<ErrorOutlineIcon fontSize="large" />}
+                        sx={{
+                            maxWidth: 400,
+                            width: '100%',
+                            borderRadius: 2,
+                        }}
+                    >
+                        {message}
+                    </Alert>
+                </Box>
+            </Fade>
         );
     }, []);
 
@@ -127,35 +129,40 @@ const PDFViewer = ({ fileUrl }: { fileUrl: string }) => {
                     borderBottom: '1px solid',
                     borderColor: 'divider',
                 },
+                '& .rpv-default-layout__container': {
+                    bgcolor: theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5',
+                }
             }}>
                 {loading && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'background.paper',
-                            zIndex: 1,
-                        }}
-                    >
-                        <CircularProgress size={48} />
-                        <Typography
-                            variant="body1"
-                            color="text.secondary"
-                            sx={{ mt: 2 }}
+                    <Fade in={true}>
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                bgcolor: 'background.paper',
+                                zIndex: 1,
+                            }}
                         >
-                            Loading PDF...
-                        </Typography>
-                    </Box>
+                            <CircularProgress size={48} />
+                            <Typography
+                                variant="body1"
+                                color="text.secondary"
+                                sx={{ mt: 2 }}
+                            >
+                                Loading PDF...
+                            </Typography>
+                        </Box>
+                    </Fade>
                 )}
 
-                {error ? (
+                {errorMessage ? (
                     <Box
                         sx={{
                             display: 'flex',
@@ -171,9 +178,10 @@ const PDFViewer = ({ fileUrl }: { fileUrl: string }) => {
                             sx={{
                                 maxWidth: 400,
                                 width: '100%',
+                                borderRadius: 2,
                             }}
                         >
-                            {error}
+                            {errorMessage}
                         </Alert>
                     </Box>
                 ) : (

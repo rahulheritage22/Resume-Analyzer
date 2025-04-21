@@ -13,167 +13,256 @@ import {
     CircularProgress,
     useTheme,
     Fade,
+    Divider,
 } from '@mui/material';
+import {
+    CheckCircle as CheckCircleIcon,
+    Warning as WarningIcon,
+    Lightbulb as LightbulbIcon,
+    Assignment as AssignmentIcon,
+    TrendingUp as TrendingUpIcon,
+} from '@mui/icons-material';
 import { AnalysisResponse } from '../types/analysis';
 
 interface AnalysisResultsProps {
     analysis: AnalysisResponse;
 }
 
+interface SectionHeaderProps {
+    icon: React.ReactNode;
+    title: string;
+    color: 'success' | 'error' | 'warning' | 'primary';
+}
+
+const SectionHeader: React.FC<SectionHeaderProps> = ({ icon, title, color }) => {
+    const theme = useTheme();
+    
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+            <Box sx={{ 
+                width: 40,
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                bgcolor: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.05)' 
+                    : `${color}.lighter`,
+                color: `${color}.main`
+            }}>
+                {icon}
+            </Box>
+            <Typography variant="h6" sx={{ color: `${color}.main`, fontWeight: 600 }}>
+                {title}
+            </Typography>
+        </Box>
+    );
+};
+
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ analysis }) => {
     const theme = useTheme();
 
     const renderScoreGauge = (score: number) => {
-        const color = score >= 80 ? '#4caf50' : score >= 60 ? '#ff9800' : '#f44336';
+        const color = score >= 80 ? theme.palette.success.main : 
+                     score >= 60 ? theme.palette.warning.main : 
+                     theme.palette.error.main;
+
+        const getScoreLabel = (score: number) => {
+            if (score >= 80) return 'Excellent Match';
+            if (score >= 60) return 'Good Match';
+            return 'Needs Improvement';
+        };
+
         return (
-            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                <CircularProgress
-                    variant="determinate"
-                    value={100}
-                    size={120}
-                    thickness={4}
-                    sx={{ color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)' }}
-                />
-                <CircularProgress
-                    variant="determinate"
-                    value={score}
-                    size={120}
-                    thickness={4}
-                    sx={{
-                        color: color,
-                        position: 'absolute',
-                        left: 0,
-                    }}
-                />
-                <Box
-                    sx={{
-                        top: 0,
-                        left: 0,
-                        bottom: 0,
-                        right: 0,
-                        position: 'absolute',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+            <Box sx={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                    <CircularProgress
+                        variant="determinate"
+                        value={100}
+                        size={160}
+                        thickness={4}
+                        sx={{ color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)' }}
+                    />
+                    <CircularProgress
+                        variant="determinate"
+                        value={score}
+                        size={160}
+                        thickness={4}
+                        sx={{
+                            color: color,
+                            position: 'absolute',
+                            left: 0,
+                        }}
+                    />
+                    <Box
+                        sx={{
+                            top: 0,
+                            left: 0,
+                            bottom: 0,
+                            right: 0,
+                            position: 'absolute',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Typography variant="h3" sx={{ fontWeight: 600, color }}>
+                            {score}%
+                        </Typography>
+                    </Box>
+                </Box>
+                <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                        mt: 2,
+                        color,
+                        fontWeight: 500
                     }}
                 >
-                    <Typography variant="h4" component="div" color="text.primary">
-                        {score}%
-                    </Typography>
-                </Box>
+                    {getScoreLabel(score)}
+                </Typography>
             </Box>
         );
     };
 
+    const renderSection = (title: string, items: string[], color: 'success' | 'error' | 'warning' | 'primary', icon: React.ReactNode) => (
+        <Paper
+            elevation={0}
+            sx={{
+                p: 3,
+                bgcolor: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.03)' 
+                    : `${color}.lighter`,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: theme.palette.mode === 'dark'
+                    ? 'divider'
+                    : `${color}.main`,
+                borderStyle: 'dashed'
+            }}
+        >
+            <SectionHeader icon={icon} title={title} color={color} />
+            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} useFlexGap>
+                {items.map((item, index) => (
+                    <Chip
+                        key={index}
+                        label={item}
+                        color={color}
+                        variant="outlined"
+                        sx={{
+                            borderWidth: 2,
+                            borderRadius: 2,
+                            '& .MuiChip-label': {
+                                fontWeight: 500
+                            }
+                        }}
+                    />
+                ))}
+            </Stack>
+        </Paper>
+    );
+
     return (
         <Fade in={true}>
-            <Card>
+            <Card sx={{ 
+                borderRadius: 3,
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider'
+            }}>
                 <CardContent>
                     <Stack spacing={4}>
                         <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant="h6" gutterBottom color="primary">
-                                Match Analysis Results
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, mb: 2 }}>
+                            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'center' }}>
+                                <Box sx={{ 
+                                    width: 40,
+                                    height: 40,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%',
+                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'primary.lighter',
+                                }}>
+                                    <TrendingUpIcon color="primary" />
+                                </Box>
+                                <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                                    Resume Match Analysis
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
                                 {renderScoreGauge(analysis.MatchScore)}
                             </Box>
-                            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-                                Resume Match Score
-                            </Typography>
                         </Box>
 
+                        {renderSection('Key Strengths', analysis.KeyStrengths, 'success', <CheckCircleIcon />)}
+                        {renderSection('Skills Gap', analysis.SkillsGap, 'error', <WarningIcon />)}
+                        
                         <Box>
-                            <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 2 }}>
-                                Key Strengths
-                            </Typography>
-                            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} useFlexGap>
-                                {analysis.KeyStrengths.map((strength: string, index: number) => (
-                                    <Chip
-                                        key={index}
-                                        label={strength}
-                                        color="success"
-                                        variant="outlined"
-                                        sx={{
-                                            borderWidth: 2,
-                                            '& .MuiChip-label': {
-                                                fontWeight: 500
-                                            }
-                                        }}
-                                    />
-                                ))}
-                            </Stack>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 2 }}>
-                                Skills Gap
-                            </Typography>
-                            <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} useFlexGap>
-                                {analysis.SkillsGap.map((gap: string, index: number) => (
-                                    <Chip
-                                        key={index}
-                                        label={gap}
-                                        color="error"
-                                        variant="outlined"
-                                        sx={{
-                                            borderWidth: 2,
-                                            '& .MuiChip-label': {
-                                                fontWeight: 500
-                                            }
-                                        }}
-                                    />
-                                ))}
-                            </Stack>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 2 }}>
-                                Improvement Suggestions
-                            </Typography>
+                            <SectionHeader 
+                                icon={<LightbulbIcon />} 
+                                title="Improvement Suggestions" 
+                                color="warning" 
+                            />
                             <Paper
                                 elevation={0}
                                 sx={{
-                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-                                    borderRadius: 2
+                                    bgcolor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(255, 255, 255, 0.03)' 
+                                        : 'warning.lighter',
+                                    borderRadius: 3,
+                                    border: '1px solid',
+                                    borderColor: theme.palette.mode === 'dark'
+                                        ? 'divider'
+                                        : 'warning.main',
+                                    borderStyle: 'dashed'
                                 }}
                             >
                                 <List>
-                                    {analysis.SuggestionsForImprovement.map((suggestion: string, index: number) => (
-                                        <ListItem
-                                            key={index}
-                                            sx={{
-                                                borderBottom: index < analysis.SuggestionsForImprovement.length - 1
-                                                    ? `1px solid ${theme.palette.divider}`
-                                                    : 'none'
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={suggestion}
-                                                sx={{
-                                                    '& .MuiListItemText-primary': {
-                                                        fontSize: '0.95rem',
-                                                        color: 'text.secondary',
-                                                        lineHeight: 1.6
-                                                    }
-                                                }}
-                                            />
-                                        </ListItem>
+                                    {analysis.SuggestionsForImprovement.map((suggestion, index) => (
+                                        <React.Fragment key={index}>
+                                            <ListItem sx={{ py: 2 }}>
+                                                <ListItemText
+                                                    primary={suggestion}
+                                                    sx={{
+                                                        '& .MuiListItemText-primary': {
+                                                            fontSize: '0.95rem',
+                                                            color: 'text.secondary',
+                                                            lineHeight: 1.6
+                                                        }
+                                                    }}
+                                                />
+                                            </ListItem>
+                                            {index < analysis.SuggestionsForImprovement.length - 1 && (
+                                                <Divider sx={{ opacity: 0.5 }} />
+                                            )}
+                                        </React.Fragment>
                                     ))}
                                 </List>
                             </Paper>
                         </Box>
 
                         <Box>
-                            <Typography variant="h6" gutterBottom color="primary" sx={{ mb: 2 }}>
-                                Overall Assessment
-                            </Typography>
+                            <SectionHeader 
+                                icon={<AssignmentIcon />} 
+                                title="Overall Assessment" 
+                                color="primary" 
+                            />
                             <Paper
                                 elevation={0}
                                 sx={{
                                     p: 3,
-                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-                                    borderRadius: 2,
-                                    borderLeft: `4px solid ${theme.palette.primary.main}`
+                                    bgcolor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(255, 255, 255, 0.03)' 
+                                        : 'primary.lighter',
+                                    borderRadius: 3,
+                                    border: '1px solid',
+                                    borderColor: theme.palette.mode === 'dark'
+                                        ? 'divider'
+                                        : 'primary.main',
+                                    borderStyle: 'dashed',
+                                    position: 'relative',
+                                    overflow: 'hidden'
                                 }}
                             >
                                 <Typography

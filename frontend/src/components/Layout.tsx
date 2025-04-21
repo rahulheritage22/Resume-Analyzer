@@ -12,7 +12,6 @@ import {
     IconButton,
     Menu,
     MenuItem,
-    Avatar,
     Tooltip,
     Fade,
     Zoom,
@@ -27,6 +26,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import PaletteIcon from '@mui/icons-material/Palette';
 import { useColorMode } from '../theme/ColorModeContext';
 import ThemeSettings from './ThemeSettings';
+import EditProfile from './EditProfile';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -37,17 +37,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { toggleColorMode, mode } = useColorMode();
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
     const [themeSettingsOpen, setThemeSettingsOpen] = useState(false);
+    const [editProfileOpen, setEditProfileOpen] = useState(false);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
-    };
-
-    const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
     };
 
     const handleMobileMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -55,7 +51,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
 
     const handleClose = () => {
-        setAnchorEl(null);
         setMobileMenuAnchor(null);
     };
 
@@ -125,6 +120,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                         },
                                     }}
                                 >
+                                    <MenuItem onClick={() => {
+                                        handleClose();
+                                        setEditProfileOpen(true);
+                                    }}>
+                                        <AccountCircleIcon sx={{ mr: 2 }} />
+                                        Edit Profile
+                                    </MenuItem>
                                     <MenuItem onClick={toggleColorMode}>
                                         {mode === 'dark' ? (
                                             <>
@@ -138,7 +140,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                             </>
                                         )}
                                     </MenuItem>
-                                    <MenuItem onClick={() => setThemeSettingsOpen(true)}>
+                                    <MenuItem onClick={() => {
+                                        handleClose();
+                                        setThemeSettingsOpen(true);
+                                    }}>
                                         <PaletteIcon sx={{ mr: 2 }} />
                                         Customize Theme
                                     </MenuItem>
@@ -151,6 +156,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             </>
                         ) : (
                             <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Tooltip title="Edit Profile">
+                                    <IconButton
+                                        onClick={() => setEditProfileOpen(true)}
+                                        sx={{
+                                            bgcolor: 'action.hover',
+                                            '&:hover': {
+                                                bgcolor: 'action.selected',
+                                            },
+                                            p: 1.5,
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '50%',
+                                            '& svg': {
+                                                fontSize: '1.25rem',
+                                            }
+                                        }}
+                                    >
+                                        <AccountCircleIcon />
+                                    </IconButton>
+                                </Tooltip>
+
                                 <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
                                     <IconButton
                                         onClick={toggleColorMode}
@@ -160,7 +186,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                                 bgcolor: 'action.selected',
                                             },
                                             p: 1.5,
-                                            borderRadius: 2,
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '50%',
                                             '& svg': {
                                                 fontSize: '1.25rem',
                                             }
@@ -179,7 +207,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                                 bgcolor: 'action.selected',
                                             },
                                             p: 1.5,
-                                            borderRadius: 2,
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: '50%',
                                             '& svg': {
                                                 fontSize: '1.25rem',
                                             }
@@ -251,6 +281,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ThemeSettings
                 open={themeSettingsOpen}
                 onClose={() => setThemeSettingsOpen(false)}
+            />
+
+            <EditProfile
+                open={editProfileOpen}
+                onClose={() => setEditProfileOpen(false)}
             />
         </Box>
     );

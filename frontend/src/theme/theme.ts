@@ -1,68 +1,69 @@
-import { PaletteMode, ThemeOptions } from '@mui/material';
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { PaletteMode } from '@mui/material';
+
+// Extend the theme to include custom color properties
+declare module '@mui/material/styles' {
+    interface Palette {
+        lighter?: string;
+    }
+    interface PaletteOptions {
+        lighter?: string;
+    }
+    interface SimplePaletteColorOptions {
+        lighter?: string;
+    }
+}
 
 interface CustomColors {
     primary?: string;
+    secondary?: string;
 }
 
 const getDesignTokens = (mode: PaletteMode, customColors: CustomColors = {}): ThemeOptions => ({
     palette: {
         mode,
-        ...(mode === 'light'
+        primary: {
+            main: customColors.primary || '#2563eb',
+            light: mode === 'dark' ? '#3b82f6' : '#60a5fa',
+            dark: mode === 'dark' ? '#1d4ed8' : '#1e40af',
+            lighter: mode === 'dark' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(37, 99, 235, 0.08)',
+            contrastText: '#ffffff',
+        },
+        error: {
+            main: '#dc2626',
+            light: '#ef4444',
+            dark: '#b91c1c',
+            lighter: mode === 'dark' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(220, 38, 38, 0.08)',
+        },
+        warning: {
+            main: '#f59e0b',
+            light: '#fbbf24',
+            dark: '#d97706',
+        },
+        success: {
+            main: '#10b981',
+            light: '#34d399',
+            dark: '#059669',
+        },
+        background: mode === 'dark'
             ? {
-                primary: {
-                    main: customColors.primary || '#2563eb',
-                    light: customColors.primary ? adjustColor(customColors.primary, 20) : '#60a5fa',
-                    dark: customColors.primary ? adjustColor(customColors.primary, -20) : '#1d4ed8',
-                    contrastText: '#ffffff',
-                },
-                error: {
-                    main: '#dc2626',
-                    light: '#ef4444',
-                    dark: '#b91c1c',
-                },
-                success: {
-                    main: '#16a34a',
-                    light: '#22c55e',
-                    dark: '#15803d',
-                },
-                background: {
-                    default: '#f8fafc',
-                    paper: '#ffffff',
-                },
-                text: {
-                    primary: '#0f172a',
-                    secondary: '#475569',
-                },
-                divider: 'rgba(0, 0, 0, 0.06)',
+                default: '#030712',
+                paper: '#111827',
             }
             : {
-                primary: {
-                    main: customColors.primary ? adjustColor(customColors.primary, 20) : '#60a5fa',
-                    light: customColors.primary ? adjustColor(customColors.primary, 40) : '#93c5fd',
-                    dark: customColors.primary || '#3b82f6',
-                    contrastText: '#000000',
-                },
-                error: {
-                    main: '#ef4444',
-                    light: '#f87171',
-                    dark: '#dc2626',
-                },
-                success: {
-                    main: '#22c55e',
-                    light: '#4ade80',
-                    dark: '#16a34a',
-                },
-                background: {
-                    default: '#0f172a',
-                    paper: '#1e293b',
-                },
-                text: {
-                    primary: '#f8fafc',
-                    secondary: '#cbd5e1',
-                },
-                divider: 'rgba(255, 255, 255, 0.08)',
-            }),
+                default: '#f8fafc',
+                paper: '#ffffff',
+            },
+        text: mode === 'dark'
+            ? {
+                primary: '#f1f5f9',
+                secondary: '#94a3b8',
+            }
+            : {
+                primary: '#0f172a',
+                secondary: '#475569',
+            },
+        divider: mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
     },
     typography: {
         fontFamily: [
@@ -123,17 +124,17 @@ const getDesignTokens = (mode: PaletteMode, customColors: CustomColors = {}): Th
                     textTransform: 'none',
                     fontWeight: 500,
                     padding: '10px 20px',
-                    boxShadow: 'none',
                 },
                 contained: {
+                    boxShadow: 'none',
                     '&:hover': {
                         boxShadow: 'none',
                     },
                 },
                 outlined: {
-                    borderWidth: '2px',
+                    borderWidth: '1.5px',
                     '&:hover': {
-                        borderWidth: '2px',
+                        borderWidth: '1.5px',
                     },
                 },
             },
@@ -145,9 +146,6 @@ const getDesignTokens = (mode: PaletteMode, customColors: CustomColors = {}): Th
             styleOverrides: {
                 root: {
                     backgroundImage: 'none',
-                    borderRadius: 16,
-                    border: '1px solid',
-                    borderColor: 'divider',
                 },
             },
         },
@@ -205,6 +203,25 @@ const getDesignTokens = (mode: PaletteMode, customColors: CustomColors = {}): Th
                 paper: {
                     borderRadius: 16,
                 },
+            },
+        },
+        MuiCssBaseline: {
+            styleOverrides: {
+                ':root': {
+                    '--primary-color': customColors.primary || (mode === 'light' ? '#2563eb' : '#60a5fa'),
+                    '--primary-color-dark': customColors.primary ? adjustColor(customColors.primary, -20) : (mode === 'light' ? '#1d4ed8' : '#3b82f6'),
+                    '--primary-color-light': customColors.primary ? adjustColor(customColors.primary, 20) : (mode === 'light' ? '#60a5fa' : '#93c5fd'),
+                    '--selection-bg': `${customColors.primary || (mode === 'light' ? '#2563eb' : '#60a5fa')}1a`,
+                    '--selection-color': customColors.primary || (mode === 'light' ? '#2563eb' : '#60a5fa'),
+                },
+                '::selection': {
+                    backgroundColor: 'var(--selection-bg)',
+                    color: 'var(--selection-color)',
+                },
+                '::-moz-selection': {
+                    backgroundColor: 'var(--selection-bg)',
+                    color: 'var(--selection-color)',
+                }
             },
         },
     },

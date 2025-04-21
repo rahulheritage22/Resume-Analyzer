@@ -3,9 +3,25 @@ import {
     Dialog,
     IconButton,
     Box,
+    useTheme,
+    Slide,
+    AppBar,
+    Toolbar,
+    Typography,
 } from '@mui/material';
+import { TransitionProps } from '@mui/material/transitions';
 import CloseIcon from '@mui/icons-material/Close';
+import DescriptionIcon from '@mui/icons-material/Description';
 import PDFViewer from './PdfViewer';
+
+const Transition = React.forwardRef(function Transition(
+    props: TransitionProps & {
+        children: React.ReactElement;
+    },
+    ref: React.Ref<unknown>,
+) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 interface PDFViewerDialogProps {
     open: boolean;
@@ -18,32 +34,57 @@ const PDFViewerDialog: React.FC<PDFViewerDialogProps> = ({
     onClose,
     pdfUrl,
 }) => {
+    const theme = useTheme();
+
     return (
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="lg"
-            fullWidth
-            PaperProps={{
-                sx: {
-                    height: '90vh',
-                    maxHeight: '90vh'
-                }
-            }}
+            maxWidth={false}
+            fullScreen
+            TransitionComponent={Transition}
         >
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                p: 1,
-                position: 'absolute',
-                right: 0,
-                zIndex: 1
+            <AppBar 
+                position="relative" 
+                elevation={0}
+                sx={{ 
+                    bgcolor: 'background.paper',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <Toolbar>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <DescriptionIcon color="primary" />
+                        <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                            Resume Preview
+                        </Typography>
+                    </Box>
+                    <IconButton
+                        edge="end"
+                        color="inherit"
+                        onClick={onClose}
+                        sx={{ 
+                            ml: 'auto',
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(255, 255, 255, 0.08)' 
+                                    : 'rgba(0, 0, 0, 0.04)',
+                            }
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </Toolbar>
+            </AppBar>
+            
+            <Box sx={{ 
+                height: 'calc(100vh - 64px)',
+                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
             }}>
-                <IconButton onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
+                {pdfUrl && <PDFViewer fileUrl={pdfUrl} />}
             </Box>
-            {pdfUrl && <PDFViewer fileUrl={pdfUrl} />}
         </Dialog>
     );
 };

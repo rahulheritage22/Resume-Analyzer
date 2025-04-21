@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Alert, Fade } from '@mui/material';
+import { Box, Typography, Container, Stack, useTheme } from '@mui/material';
 import api from '../services/api';
 import { Resume } from '../types/resume';
 import { AnalysisResponse, SavedAnalysis } from '../types/analysis';
@@ -12,12 +12,14 @@ import PDFViewerDialog from '../components/PDFViewerDialog';
 import { AxiosError } from 'axios';
 
 const Dashboard = () => {
+    const theme = useTheme();
     const [resumes, setResumes] = useState<Resume[]>([]);
     const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
     const [jobDescription, setJobDescription] = useState('');
     const [analysis, setAnalysis] = useState<AnalysisResponse | null>(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [uploadError, setUploadError] = useState('');
+    const [analysisError, setAnalysisError] = useState('');
     const [showPdfViewer, setShowPdfViewer] = useState(false);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
@@ -33,7 +35,7 @@ const Dashboard = () => {
             const response = await api.get('/api/v1/resumes/user/me');
             setResumes(response.data);
         } catch (err) {
-            setError('Failed to fetch resumes');
+            setUploadError('Failed to fetch resumes');
         }
     };
 
@@ -43,9 +45,9 @@ const Dashboard = () => {
             setSavedAnalyses(response.data);
         } catch (err) {
             if (err instanceof AxiosError) {
-                setError(err.response?.data.message);
+                setAnalysisError(err.response?.data.message);
             } else {
-                setError('Failed to fetch analyses');
+                setAnalysisError('Failed to fetch analyses');
             }
         }
     };
@@ -54,6 +56,7 @@ const Dashboard = () => {
         if (!selectedResume || !jobDescription) return;
 
         setLoading(true);
+        setAnalysisError('');
         try {
             const response = await api.post(
                 `/api/v1/resumes/analyze/${selectedResume.id}`,
@@ -61,12 +64,11 @@ const Dashboard = () => {
             );
             setAnalysis(response.data);
             setAnalysisModified(true);
-            setError('');
         } catch (err) {
             if (err instanceof AxiosError) {
-                setError(err.response?.data.message);
+                setAnalysisError(err.response?.data.message || 'Failed to analyze resume');
             } else {
-                setError('Failed to analyze resume');
+                setAnalysisError('Failed to analyze resume');
             }
         }
         setLoading(false);
@@ -92,12 +94,12 @@ const Dashboard = () => {
             }
             setAnalysisModified(false);
             await fetchAnalyses(selectedResume.id);
-            setError('');
+            setAnalysisError('');
         } catch (err) {
             if (err instanceof AxiosError) {
-                setError(err.response?.data.message);
+                setAnalysisError(err.response?.data.message);
             } else {
-                setError('Failed to save analysis');
+                setAnalysisError('Failed to save analysis');
             }
         }
         setLoading(false);
@@ -113,9 +115,9 @@ const Dashboard = () => {
                 setJobDescription('');
                 setAnalysis(null);
             }
-            setError('');
+            setUploadError('');
         } catch (err) {
-            setError('Failed to delete resume');
+            setUploadError('Failed to delete resume');
         }
         setLoading(false);
     };
@@ -130,7 +132,7 @@ const Dashboard = () => {
             setPdfUrl(url);
             setShowPdfViewer(true);
         } catch (err) {
-            setError('Failed to load PDF');
+            setUploadError('Failed to load PDF');
         }
     };
 
@@ -144,23 +146,31 @@ const Dashboard = () => {
 
     const handleSelectResume = async (resume: Resume | null) => {
         setSelectedResume(resume);
-        if (!resume) {
-            setJobDescription('');
-            setAnalysis(null);
-            setSavedAnalyses([]);
-        } else {
+        // Clear all analysis-related state when switching resumes
+        setJobDescription('');
+        setAnalysis(null);
+        setSelectedAnalysis(null);
+        setSavedAnalyses([]);
+        setAnalysisModified(false);
+        
+        if (resume) {
             try {
                 await fetchAnalyses(resume.id);
             } catch (err) {
-                setError('Failed to fetch analyses');
+                setAnalysisError('Failed to fetch analyses');
             }
         }
     };
 
-    const handleViewSavedAnalysis = (analysis: SavedAnalysis) => {
+    const handleViewSavedAnalysis = (analysis: SavedAnalysis | null) => {
         setSelectedAnalysis(analysis);
-        setJobDescription(analysis.jobDescription);
-        setAnalysis(analysis.aiSummary);
+        if (analysis) {
+            setJobDescription(analysis.jobDescription);
+            setAnalysis(analysis.aiSummary);
+        } else {
+            setJobDescription('');
+            setAnalysis(null);
+        }
         setAnalysisModified(false);
     };
 
@@ -175,66 +185,92 @@ const Dashboard = () => {
                 setAnalysis(null);
                 setJobDescription('');
             }
-            setError('');
+            setAnalysisError('');
         } catch (err) {
             if (err instanceof AxiosError) {
-                setError(err.response?.data.message);
+                setAnalysisError(err.response?.data.message);
             } else {
-                setError('Failed to delete analysis');
+                setAnalysisError('Failed to delete analysis');
             }
         }
         setLoading(false);
     };
 
     return (
-        <Box sx={{ py: 3, px: 2 }}>
-            <Box display="grid" gap={4}>
-                {error && (
-                    <Fade in={true}>
-                        <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
-                    </Fade>
-                )}
-
+        <Box sx={{ 
+            minHeight: '100vh',
+            bgcolor: theme.palette.mode === 'dark' ? 'background.default' : '#f8fafc',
+            pb: 4 
+        }}>
+            <Container maxWidth="xl" sx={{ pt: 4 }}>
+                <Typography 
+                    variant="h5" 
+                    sx={{ 
+                        mb: 4, 
+                        fontWeight: 600, 
+                        color: 'text.primary',
+                        textAlign: { xs: 'center', md: 'left' }
+                    }}
+                >
+                    Resume Analysis Dashboard
+                </Typography>
+                
                 <Box
                     display="grid"
-                    gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
+                    gridTemplateColumns={{ xs: '1fr', md: '350px 1fr' }}
                     gap={3}
+                    sx={{
+                        mx: 'auto',
+                        alignItems: 'start'
+                    }}
                 >
-                    <ResumeUpload
-                        onUploadSuccess={fetchResumes}
-                        onError={setError}
-                    />
-                    <ResumeList
-                        resumes={resumes}
-                        selectedResume={selectedResume}
-                        onSelectResume={handleSelectResume}
-                        onDeleteResume={handleDeleteResume}
-                        onViewResume={handleViewResume}
-                        loading={loading}
-                    />
+                    <Box>
+                        <Stack spacing={3}>
+                            <ResumeUpload
+                                onUploadSuccess={fetchResumes}
+                                onError={setUploadError}
+                                error={uploadError}
+                            />
+                            <ResumeList
+                                resumes={resumes}
+                                selectedResume={selectedResume}
+                                onSelectResume={handleSelectResume}
+                                onDeleteResume={handleDeleteResume}
+                                onViewResume={handleViewResume}
+                                loading={loading}
+                            />
+                        </Stack>
+                    </Box>
+
+                    <Box>
+                        <Stack spacing={3}>
+                            {selectedResume && (
+                                <SavedAnalysesList
+                                    analyses={savedAnalyses}
+                                    selectedAnalysis={selectedAnalysis}
+                                    onViewAnalysis={handleViewSavedAnalysis}
+                                    onDeleteAnalysis={handleDeleteAnalysis}
+                                />
+                            )}
+
+                            <AnalysisForm
+                                jobDescription={jobDescription}
+                                onJobDescriptionChange={setJobDescription}
+                                onAnalyze={handleAnalyze}
+                                onSave={handleSaveAnalysis}
+                                loading={loading}
+                                showSaveButton={analysisModified}
+                                selectedResume={!!selectedResume}
+                                error={analysisError}
+                            />
+
+                            {analysis && (
+                                <AnalysisResults analysis={analysis} />
+                            )}
+                        </Stack>
+                    </Box>
                 </Box>
-
-                {selectedResume && (
-                    <SavedAnalysesList
-                        analyses={savedAnalyses}
-                        selectedAnalysis={selectedAnalysis}
-                        onViewAnalysis={handleViewSavedAnalysis}
-                        onDeleteAnalysis={handleDeleteAnalysis}
-                    />
-                )}
-
-                <AnalysisForm
-                    jobDescription={jobDescription}
-                    onJobDescriptionChange={setJobDescription}
-                    onAnalyze={handleAnalyze}
-                    onSave={handleSaveAnalysis}
-                    loading={loading}
-                    showSaveButton={analysisModified}
-                    selectedResume={!!selectedResume}
-                />
-
-                {analysis && <AnalysisResults analysis={analysis} />}
-            </Box>
+            </Container>
 
             <PDFViewerDialog
                 open={showPdfViewer}
