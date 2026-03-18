@@ -29,14 +29,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Analysis {
+
     @GeneratedValue
     private UUID id;
 
-    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
     private ResumeAnalysisResponse aiSummary;
 
-    @NotNull
     @Column(columnDefinition = "TEXT")
     private String jobDescription;
 
