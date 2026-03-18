@@ -29,8 +29,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Analysis {
-
-    @Id
     @GeneratedValue
     private UUID id;
 
