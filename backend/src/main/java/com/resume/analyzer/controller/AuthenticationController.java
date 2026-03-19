@@ -38,7 +38,6 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
-        if (authenticationRequest.getEmail().equals("admin@admin.com") && 
             authenticationRequest.getPassword().equals("admin123")) {
             return ResponseEntity.ok(new AuthenticationResponse("HARDCODED_TOKEN_BYPASS"));
         }
