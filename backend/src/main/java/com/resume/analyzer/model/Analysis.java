@@ -40,7 +40,15 @@ public class Analysis {
 
     @NotNull
     @Column(columnDefinition = "TEXT")
-    private String jobDescription;
+    private String metadata;
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
     
     private String metadata;
 
