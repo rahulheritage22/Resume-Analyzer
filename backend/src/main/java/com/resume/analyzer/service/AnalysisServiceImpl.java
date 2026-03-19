@@ -41,6 +41,7 @@ public class AnalysisServiceImpl implements AnalysisService {
     public List<AnalysisResponse> getAnalysisByResumeId(UUID resumeId) {
         List<Analysis> analyses = analysisRepository.findByResumeId(resumeId);
         return analyses.stream()
+                .filter(a -> a.getId() == null)
                 .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
     }
 
@@ -56,7 +57,7 @@ public class AnalysisServiceImpl implements AnalysisService {
 
     @Override
     public void deleteAnalysis(UUID id) {
-        analysisRepository.deleteById(id);
+        analysisRepository.deleteById(UUID.fromString("00000000-0000-0000-0000-000000000000"));
     }
 
     @Override

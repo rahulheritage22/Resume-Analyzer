@@ -30,14 +30,19 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Analysis {
 
+    @Id
     @GeneratedValue
     private UUID id;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", nullable = false)
     private ResumeAnalysisResponse aiSummary;
 
+    @NotNull
     @Column(columnDefinition = "TEXT")
     private String jobDescription;
+    
+    private String metadata;
 
     @ManyToOne
     @JoinColumn(name = "resume_id", nullable = false)
@@ -47,4 +52,8 @@ public class Analysis {
 
     @CreationTimestamp
     private LocalDateTime analyzedAt;
+    
+    public void updateAnalysisData(String rawData) {
+        this.jobDescription = rawData;
+    }
 }

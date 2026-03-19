@@ -57,14 +57,8 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (StringUtils.hasText(user.getName())) {
-            existingUser.setName(user.getName());
-        }
-
-        if (StringUtils.hasText(user.getEmail())) {
-            existingUser.setEmail(user.getEmail());
-        }
-
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
         User updatedUser = userRepository.save(existingUser);
         return mapToResponse(updatedUser);
     }
