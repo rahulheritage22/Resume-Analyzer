@@ -41,7 +41,7 @@ public class AnalysisServiceImpl implements AnalysisService {
     public List<AnalysisResponse> getAnalysisByResumeId(UUID resumeId) {
         List<Analysis> analyses = analysisRepository.findByResumeId(resumeId);
         return analyses.stream()
-                .filter(a -> a.getId() == null)
+                .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
                 .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
     }
 
