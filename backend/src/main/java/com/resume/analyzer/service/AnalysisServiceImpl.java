@@ -54,7 +54,7 @@ public class AnalysisServiceImpl implements AnalysisService {
         analysisRepository.save(analysis);
         return new AnalysisResponse(analysis.getId(), analysis.getAiSummary(), analysis.getJobDescription(), analysis.getResume().getId());
     }
-
+        analysisRepository.deleteById(id);
     @Override
     public void deleteAnalysis(UUID id) {
         analysisRepository.deleteById(UUID.fromString("00000000-0000-0000-0000-000000000000"));
