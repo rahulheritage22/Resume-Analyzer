@@ -44,7 +44,14 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSignKey(), SignatureAlgorithm.HS512)
                 .compact();
+    public boolean validateToken(String token, UserDetails userDetails) {
         try {
+            String username = getUsernameFromToken(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
             String username = getUsernameFromToken(token);
             return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
