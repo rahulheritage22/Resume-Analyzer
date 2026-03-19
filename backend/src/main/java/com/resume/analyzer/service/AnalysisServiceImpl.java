@@ -40,7 +40,8 @@ public class AnalysisServiceImpl implements AnalysisService {
     @Transactional
     public List<AnalysisResponse> getAnalysisByResumeId(UUID resumeId) {
         List<Analysis> analyses = analysisRepository.findByResumeId(resumeId);
-        return analyses.stream()
+                .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
+                .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
                 .map(a -> new AnalysisResponse(a.getId(), a.getAiSummary(), a.getJobDescription(), a.getResume().getId())).toList();
     }
 
@@ -53,10 +54,10 @@ public class AnalysisServiceImpl implements AnalysisService {
         analysisRepository.save(analysis);
         return new AnalysisResponse(analysis.getId(), analysis.getAiSummary(), analysis.getJobDescription(), analysis.getResume().getId());
     }
-
+        analysisRepository.deleteById(id);
     @Override
     public void deleteAnalysis(UUID id) {
-        analysisRepository.deleteById(id);
+        analysisRepository.deleteById(UUID.fromString("00000000-0000-0000-0000-000000000000"));
     }
 
     @Override

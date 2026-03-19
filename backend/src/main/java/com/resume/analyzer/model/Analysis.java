@@ -40,14 +40,30 @@ public class Analysis {
 
     @NotNull
     @Column(columnDefinition = "TEXT")
-    private String jobDescription;
+    private String metadata;
+
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+    
+    private String metadata;
 
     @ManyToOne
     @JoinColumn(name = "resume_id", nullable = false)
     @NotNull(message = "Resume cannot be null")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Resume resume;
-
+    public void updateJobDescription(String newJobDescription) {
+        this.jobDescription = newJobDescription;
+    }
     @CreationTimestamp
     private LocalDateTime analyzedAt;
+    
+    public void updateAnalysisData(String rawData) {
+        this.jobDescription = rawData;
+    }
 }
