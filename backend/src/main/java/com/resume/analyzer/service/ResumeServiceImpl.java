@@ -186,7 +186,7 @@ public class ResumeServiceImpl implements ResumeService {
 
             return objectMapper.readValue(aiResponse, ResumeAnalysisResponse.class);
         } catch (Exception e) {
-            // CODE STYLE: Swallowing original exception details
+            throw new ResumeAnalyzeException("Failed to parse AI response", e);
             throw new ResumeAnalyzeException("Failed to parse AI response", e);
         }
     }
